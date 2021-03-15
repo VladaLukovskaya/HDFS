@@ -17,10 +17,13 @@ def mkdir(url):  # done
 def put_a_file(url, local_path):  # done
     params = {
         'user.name': 'hadoop',
-        'op': 'CREATE'
+        'op': 'CREATE',
+        'noredirect': 'true'
     }
-    # path_to_file = input('Path to the local file: ')
-    put = requests.put(url, params=params, data=open(local_path, 'rb'))
+    put = requests.put(url, params=params)
+    response = put.json()
+    hdfs_url = response['Location']
+    new_request = requests.put(hdfs_url, data=open(local_path, 'rb'))
     print(put.text)
     return True
 
@@ -28,24 +31,33 @@ def put_a_file(url, local_path):  # done
 def get_a_file(url, local_path):  # done
     params = {
         'user.name': 'hadoop',
-        'op': 'OPEN'
+        'op': 'OPEN',
+        'noredirect': 'true'
     }
     get = requests.get(url, params=params)
+    response = get.json()
+    hdfs_url = response['Location']
+    new_request = requests.get(hdfs_url)
     with open(local_path, 'w') as f:
-        f.write(get.text)
-    print(get.text)
+        f.write(new_request.text)
+        print(new_request.text)
     return True
 
 
 def append_a_file(url, local_path):  # done
     params = {
         'user.name': 'hadoop',
-        'op': 'APPEND'
+        'op': 'APPEND',
+        'noredirect': 'true'
     }
     with open(local_path, 'rb') as f:
         data = f.read()
-    append = requests.post(url, params=params, data=data)
-    print(append.text)
+    # append = requests.post(url, params=params, data=data)
+    append = requests.post(url, params=params)
+    response = append.json()
+    hdfs_url = response['Location']
+    new_request = requests.post(hdfs_url, data=data)
+    # print(hdfs_url)
     return True
 
 
@@ -55,7 +67,7 @@ def delete_a_file(url):  # done
         'op': 'DELETE'
     }
     delete = requests.delete(url, params=params)
-    print(delete.text)
+    # print(delete.text)
     return True
 
 
@@ -86,7 +98,7 @@ while inside != 'exit':
     if len(inside) == 2:
         hdfs_path = pwd + inside[1]
         request_url = f'http://localhost:9870/webhdfs/v1{hdfs_path}'
-        # print('path:', path)
+        # print('path:', hdfs_path)
         # print('req:', request_url)
         if option == 'mkdir':
             mkdir(request_url)
@@ -95,9 +107,9 @@ while inside != 'exit':
         elif option == 'ls':
             list_a_dir(request_url)
         elif option == 'cd':
-            pwd = path
+            pwd = hdfs_path
             if inside[1] == '..':
-                pwd = path.split('/')
+                pwd = hdfs_path.split('/')
                 pwd = pwd[:-2]
                 pwd = '/'.join(pwd) + '/'
         elif option == 'lcd':
@@ -108,7 +120,7 @@ while inside != 'exit':
         hdfs_path = pwd + inside[1]
         request_url = f'http://localhost:9870/webhdfs/v1{hdfs_path}'
         path_to_local = getcwd() + '/' + inside[2]
-        print('cdw', path_to_local)
+        # print('cdw', path_to_local)
         if option == 'put':
             put_a_file(request_url, path_to_local)
         elif option == 'get':
@@ -118,7 +130,7 @@ while inside != 'exit':
     else:
         hdfs_path = pwd
         request_url = f'http://localhost:9870/webhdfs/v1{hdfs_path}'
-        # print('else path:', path)
+        # print('else path:', hdfs_path)
         # print('else req:', request_url)
         if option == 'ls':
             list_a_dir(request_url)
@@ -129,9 +141,9 @@ while inside != 'exit':
             lls_status = listdir(getcwd())
             for elem in lls_status:
                 if elem in list(filter(path.isdir, listdir(getcwd()))):
-                    print('dir', '    ', elem)
+                    print('vlada', '   ', 'dir', '    ', elem)
                 if elem in list(filter(path.isfile, listdir(getcwd()))):
-                    print('file', '   ', elem)
+                    print('vlada', '   ', 'file', '   ', elem)
         else:
             print("Sorry, i don't know this command")
     inside = ''.join(inside)
