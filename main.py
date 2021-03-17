@@ -4,6 +4,15 @@ from os import listdir, chdir, getcwd, path
 # r = requests.get('http://localhost:9870', auth=('hadoop', 'hdoop$#'))
 
 
+def open_a_file(url):
+    params = {
+        'user.name': 'hadoop',
+        'op': 'OPEN'
+    }
+    open_req = requests.get(url, params=params)
+    print(open_req.text)
+
+
 def mkdir(url):  # done
     params = {
         'user.name': 'hadoop',
@@ -23,8 +32,10 @@ def put_a_file(url, local_path):  # done
     put = requests.put(url, params=params)
     response = put.json()
     hdfs_url = response['Location']
-    new_request = requests.put(hdfs_url, data=open(local_path, 'rb'))
-    print(put.text)
+    with open(local_path, 'r') as f:
+        data = f.read()
+    new_request = requests.put(hdfs_url, data=data)
+    open_a_file(url)
     return True
 
 
@@ -50,13 +61,14 @@ def append_a_file(url, local_path):  # done
         'op': 'APPEND',
         'noredirect': 'true'
     }
-    with open(local_path, 'rb') as f:
+    with open(local_path, 'r') as f:
         data = f.read()
     # append = requests.post(url, params=params, data=data)
     append = requests.post(url, params=params)
     response = append.json()
     hdfs_url = response['Location']
     new_request = requests.post(hdfs_url, data=data)
+    open_a_file(url)
     # print(hdfs_url)
     return True
 
@@ -112,8 +124,13 @@ while inside != 'exit':
                 pwd = hdfs_path.split('/')
                 pwd = pwd[:-2]
                 pwd = '/'.join(pwd) + '/'
+                print(pwd)
+            else:
+                pwd = pwd + '/'
+                print(pwd)
         elif option == 'lcd':
             chdir(inside[1])
+            print(f'{getcwd()}')
         else:
             print("Sorry, i don't know this command")
     elif len(inside) == 3:
