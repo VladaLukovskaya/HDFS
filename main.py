@@ -1,8 +1,6 @@
 import requests
 from os import listdir, chdir, getcwd, path
 
-# r = requests.get('http://localhost:9870', auth=('hadoop', 'hdoop$#'))
-
 
 def open_a_file(url):
     params = {
@@ -13,7 +11,7 @@ def open_a_file(url):
     print(open_req.text)
 
 
-def mkdir(url):  # done
+def mkdir(url):
     params = {
         'user.name': 'hadoop',
         'op': 'MKDIRS'
@@ -23,7 +21,7 @@ def mkdir(url):  # done
     return True
 
 
-def put_a_file(url, local_path):  # done
+def put_a_file(url, local_path):
     params = {
         'user.name': 'hadoop',
         'op': 'CREATE',
@@ -39,7 +37,7 @@ def put_a_file(url, local_path):  # done
     return True
 
 
-def get_a_file(url, local_path):  # done
+def get_a_file(url, local_path):
     params = {
         'user.name': 'hadoop',
         'op': 'OPEN',
@@ -55,7 +53,7 @@ def get_a_file(url, local_path):  # done
     return True
 
 
-def append_a_file(url, local_path):  # done
+def append_a_file(url, local_path):
     params = {
         'user.name': 'hadoop',
         'op': 'APPEND',
@@ -63,17 +61,15 @@ def append_a_file(url, local_path):  # done
     }
     with open(local_path, 'r') as f:
         data = f.read()
-    # append = requests.post(url, params=params, data=data)
     append = requests.post(url, params=params)
     response = append.json()
     hdfs_url = response['Location']
     new_request = requests.post(hdfs_url, data=data)
     open_a_file(url)
-    # print(hdfs_url)
     return True
 
 
-def delete_a_file(url):  # done
+def delete_a_file(url):
     params = {
         'user.name': 'hadoop',
         'op': 'DELETE'
@@ -83,7 +79,7 @@ def delete_a_file(url):  # done
     return True
 
 
-def list_a_dir(url):  # done
+def list_a_dir(url):
     params = {
         'user.name': 'hadoop',
         'op': 'LISTSTATUS'
@@ -110,8 +106,6 @@ while inside != 'exit':
     if len(inside) == 2:
         hdfs_path = pwd + inside[1]
         request_url = f'http://localhost:9870/webhdfs/v1{hdfs_path}'
-        # print('path:', hdfs_path)
-        # print('req:', request_url)
         if option == 'mkdir':
             mkdir(request_url)
         elif option == 'del':
@@ -158,9 +152,9 @@ while inside != 'exit':
             lls_status = listdir(getcwd())
             for elem in lls_status:
                 if elem in list(filter(path.isdir, listdir(getcwd()))):
-                    print('vlada', '   ', 'dir', '    ', elem)
+                    print('user', '   ', 'dir', '    ', elem)
                 if elem in list(filter(path.isfile, listdir(getcwd()))):
-                    print('vlada', '   ', 'file', '   ', elem)
+                    print('user', '   ', 'file', '   ', elem)
         else:
             print("Sorry, i don't know this command")
     inside = ''.join(inside)
